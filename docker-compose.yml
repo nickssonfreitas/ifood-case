@@ -1,0 +1,11 @@
+services:
+  ifood-lab:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: ifood-lab
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+    working_dir: /app

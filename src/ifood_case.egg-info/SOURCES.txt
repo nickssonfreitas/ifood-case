@@ -1,0 +1,6 @@
+pyproject.toml
+src/ifood_case.egg-info/PKG-INFO
+src/ifood_case.egg-info/SOURCES.txt
+src/ifood_case.egg-info/dependency_links.txt
+src/ifood_case.egg-info/requires.txt
+src/ifood_case.egg-info/top_level.txt

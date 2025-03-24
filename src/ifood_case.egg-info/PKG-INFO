@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: ifood-case
+Version: 0.1.0
+Summary: Recomendação de ofertas com base em dados de clientes, transações e campanhas de marketing usando PySpark
+Author-email: Nicksson Ckayo Arrais de Freitas <nickssonarrais@email.com>
+License-Expression: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pyspark>=3.5.0
+Requires-Dist: pandas>=2.2.0
+Requires-Dist: scikit-learn>=1.4.0
+Requires-Dist: matplotlib>=3.8.0
+Requires-Dist: seaborn>=0.13.0
+Requires-Dist: jupyterlab>=4.1.0
