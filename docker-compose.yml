@@ -7,5 +7,5 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - .:/app
+      - .:/app:rw
     working_dir: /app  

@@ -1,5 +1,7 @@
+from pyspark.sql.functions import col, when, mean
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, count, isnan, when, lit
+
 
 def isna_sum(df: DataFrame, name: str) -> None:
     """
@@ -34,7 +36,6 @@ def isna_sum(df: DataFrame, name: str) -> None:
     df.show(5, truncate=False)
 
 
-
 def value_counts(df: DataFrame, column: str, show_nulls=True) -> None:
     """
     Exibe a contagem e porcentagem de cada valor único em uma coluna.
@@ -59,3 +60,45 @@ def value_counts(df: DataFrame, column: str, show_nulls=True) -> None:
     ) \
         .orderBy("count", ascending=False) \
         .show(truncate=False)
+
+
+def clean_customers_data(df: DataFrame) -> DataFrame:
+    """
+    Cleans the 'gender' and 'credit_card_limit' columns in the customers dataset.
+
+    Cleaning rules:
+    - 'gender':
+        - Keep 'M' and 'F'
+        - Replace 'O' and NULL with 'unknown'
+    - 'credit_card_limit':
+        - Replace NULLs with the median value of the column
+
+    Parameters:
+        df (DataFrame): Input Spark DataFrame with raw customer data
+
+    Returns:
+        DataFrame: Cleaned DataFrame
+    """
+
+    print("🔍 Cleaning 'gender' column...")
+    df = df.withColumn(
+        "gender",
+        when(col("gender").isin("M", "F"), col("gender")).otherwise("unknown")
+    )
+    print("✅ 'gender' cleaned: values normalized (M, F, unknown)")
+
+    print("\n📈 Calculating statistics for 'credit_card_limit'...")
+
+    # Mean (optional debug/info)
+    mean_value = df.select(mean("credit_card_limit")).first()[0]
+    print(f"📊 Mean credit limit: {mean_value:.2f}")
+
+    # Median via approxQuantile
+    median_value = df.approxQuantile("credit_card_limit", [0.5], 0.01)[0]
+    print(f"📏 Median credit limit: {median_value:.2f}")
+
+    # Fill NULLs with median
+    df = df.fillna({"credit_card_limit": median_value})
+    print("✅ 'credit_card_limit' nulls filled with median.")
+
+    return df
