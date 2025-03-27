@@ -2,7 +2,8 @@
 SERVICE=ifood-lab
 
 # Subir o container com build
-up:
+build:
+	bash create-env-file.sh
 	docker-compose up --build
 
 # Subir o container sem rebuild
@@ -16,6 +17,7 @@ stop:
 # Rebuild completo
 rebuild:
 	docker-compose down
+	bash create-env-file.sh
 	docker-compose build --no-cache
 	docker-compose up
 

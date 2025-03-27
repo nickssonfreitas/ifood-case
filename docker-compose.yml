@@ -1,11 +1,32 @@
+version: "3.9"  # Versão da especificação do Docker Compose
+
+# Serviço principal da aplicação
 services:
   ifood-lab:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: ifood-lab
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    user: "${UID}:${GID}"
+    volumes:
+      - .:/app
     ports:
       - "8888:8888"
+    container_name: ifood-case-lab
+      
+
+  # Serviço auxiliar (ex: worker, processamento em background, etc.)
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    user: "${UID}:${GID}"
     volumes:
-      - .:/app:rw
-    working_dir: /app  
+      - .:/app
+    container_name: worker-1
+      

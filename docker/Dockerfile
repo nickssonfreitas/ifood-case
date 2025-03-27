@@ -1,50 +1,46 @@
-# Imagem base com Python 3.11
 FROM python:3.11-slim
 
-# Evita prompts interativos durante a instalação
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Define o nome do usuário
+# Argumentos com valores padrão
+# Run "id -u" in host and get UID and "id -g" to get "GID
+ARG UID=1002
+ARG GID=1002 
 ARG USERNAME=nicksson
 
-# Atualiza pacotes e instala dependências do sistema
+# Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
     default-jdk \
     curl \
     ca-certificates \
-    git \
-    tmux \
-    nano\
     build-essential \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala o UV via script oficial (https://docs.astral.sh/uv/guides/integration/docker/#configuring-watch-with-docker-compose)
+# Instala o UV (antes de qualquer coisa)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Cria um usuário não root e define permissões
-RUN useradd -ms /bin/bash $USERNAME
-
-# Define o diretório de trabalho no container
+# Define diretório de trabalho
 WORKDIR /app
 
-# Copia todos os arquivos do projeto
-COPY . .
+# Copia os arquivos do projeto (depois que WORKDIR está definido)
+COPY ../ ./
 
-# Ajusta as permissões dos arquivos para o usuário não root
-RUN chown -R $USERNAME:$USERNAME /app
-
-# Troca para o usuário não root
-USER $USERNAME
-
-# Instala as dependências diretamente no Python da venv usando UV
+# Instala as dependências do projeto
 RUN uv pip install . --system
 
-# Ajusta as permissões do diretório de trabalho para o usuário não root
-RUN chmod -R 755 /app
+# Copia o script de entrada do notebook
+COPY docker/start_notebook.sh /usr/local/bin/start_notebook.sh
+RUN chmod +x /usr/local/bin/start_notebook.sh
 
-# Expondo a porta do JupyterLab
-EXPOSE 8888
+# Cria grupo e usuário compatíveis com o host
+RUN groupadd -g $GID $USERNAME && \
+    useradd -m -u $UID -g $GID -s /bin/bash $USERNAME
 
-# Comando padrão do container
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''", "--NotebookApp.password=''"]
+# Ajusta permissões do diretório de trabalho
+RUN chown -R $USERNAME:$USERNAME /app
+
+# Troca para o usuário
+USER $USERNAME
+
+# Define o ponto de entrada
+ENTRYPOINT ["start_notebook.sh"]
