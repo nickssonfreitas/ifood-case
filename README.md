@@ -76,13 +76,20 @@ jupyter lab
 
 ### 🔹 Passos
 
-1. Construa e suba os containers:
+1. Clone o repositório:
 
 ```bash
-docker-compose up --build
+git clone https://github.com/nickssonfreitas/ifood-case.git
+cd ifood-case
 ```
 
-2. Acesse o JupyterLab:
+2. Construa e suba os containers:
+
+```bash
+make build
+```
+
+3. Acesse o JupyterLab:
 
 ```
 http://localhost:8888/lab
