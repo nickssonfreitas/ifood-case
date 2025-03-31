@@ -46,4 +46,10 @@ docker-compose.override.yml
 # Arquivos do sistema
 .Trash-1002/
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg
 *.egg-info/
+dist/
+build/

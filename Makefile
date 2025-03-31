@@ -1,7 +1,7 @@
-# Nome do serviço Docker Compose
-SERVICE=ifood-lab
+# Nome do serviço principal do docker-compose (como definido no container_name)
+SERVICE=ifood-jupyterlab
 
-# Subir o container com build
+# Subir o container com build + criação do .env
 build:
 	bash create-env-file.sh
 	docker-compose up --build
@@ -10,33 +10,47 @@ build:
 start:
 	docker-compose up
 
-# Parar o container
+# Parar todos os containers
 stop:
 	docker-compose down
 
 # Rebuild completo
 rebuild:
-	docker-compose down
+	docker-compose down --remove-orphans
 	bash create-env-file.sh
 	docker-compose build --no-cache
 	docker-compose up
 
-# Ver logs do container
+# Logs apenas do serviço principal (JupyterLab)
 logs:
 	docker-compose logs -f $(SERVICE)
 
-# Acessar o bash do container
+# Logs de todos os containers
+logs-all:
+	docker-compose logs -f
+
+# Acessar bash do container principal
 bash:
 	docker exec -it $(SERVICE) /bin/bash
 
-# Rodar Jupyter manualmente (caso precise)
+# Executar Jupyter manualmente (útil se container estiver rodando com command neutro)
 jupyter:
 	docker exec -it $(SERVICE) jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
-# Checar status dos containers
+# Ver containers ativos
 ps:
 	docker ps
 
-# Limpar imagens/paradas (cuidado!)
+# Limpeza total (cuidado)
 clean:
+	@echo "⚠️  Isso vai apagar containers, volumes e imagens não utilizados!"
+	sleep 2
 	docker system prune -af --volumes
+
+# Rodar lint usando ferramentas configuradas no pyproject
+lint:
+	docker exec -it $(SERVICE) bash -c "ruff src && black --check src && isort --check-only src && mypy src"
+
+# Rodar testes
+test:
+	docker exec -it $(SERVICE) pytest

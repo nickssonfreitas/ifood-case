@@ -1,46 +1,53 @@
 FROM python:3.11-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Argumentos com valores padrão
-# Run "id -u" in host and get UID and "id -g" to get "GID
-ARG UID=1002
-ARG GID=1002 
+# Argumentos para usuário não-root
 ARG USERNAME=nicksson
+ARG UID=1000
+ARG GID=1000
 
-# Instala dependências do sistema
-RUN apt-get update && apt-get install -y \
+# Variáveis de ambiente
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    UV_CACHE_DIR="/home/${USERNAME}/.cache/uv" \
+    PATH="/home/${USERNAME}/.local/bin:$PATH"
+
+# Instalar dependências do sistema
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     default-jdk \
     curl \
-    ca-certificates \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    git \
+    build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Instala o UV (antes de qualquer coisa)
+# Criar usuário não-root
+RUN groupadd -g ${GID} ${USERNAME} && \
+    useradd -m -s /bin/bash -u ${UID} -g ${GID} ${USERNAME}
+
+# Instalar uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Define diretório de trabalho
+# Diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos do projeto (depois que WORKDIR está definido)
-COPY ../ ./
+# Copiar arquivos de dependência e instalar dependências do projeto
+COPY --chown=${USERNAME}:${USERNAME} pyproject.toml ./
+COPY --chown=${USERNAME}:${USERNAME} README.md ./
 
-# Instala as dependências do projeto
-RUN uv pip install . --system
-
-# Copia o script de entrada do notebook
+RUN uv pip compile pyproject.toml -o requirements.txt && \
+    uv pip install --system -r requirements.txt
+   
+# Copiar restante do projeto e script de inicialização
+COPY --chown=${USERNAME}:${USERNAME} . .
 COPY docker/start_notebook.sh /usr/local/bin/start_notebook.sh
 RUN chmod +x /usr/local/bin/start_notebook.sh
 
-# Cria grupo e usuário compatíveis com o host
-RUN groupadd -g $GID $USERNAME && \
-    useradd -m -u $UID -g $GID -s /bin/bash $USERNAME
+# Ajustar permissões
+RUN chown -R ${USERNAME}:${USERNAME} /app
 
-# Ajusta permissões do diretório de trabalho
-RUN chown -R $USERNAME:$USERNAME /app
+# Trocar para usuário não-root
+USER ${USERNAME}
 
-# Troca para o usuário
-USER $USERNAME
-
-# Define o ponto de entrada
+# Entrypoint para iniciar o JupyterLab com suporte ao PySpark
 ENTRYPOINT ["start_notebook.sh"]

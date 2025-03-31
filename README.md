@@ -1,136 +1,130 @@
-# 🧠 iFood Case Técnico – Recomendação de Ofertas com PySpark
 
-Este projeto propõe uma solução baseada em dados para otimizar a estratégia de envio de ofertas aos clientes do iFood, levando em conta o tipo de oferta, o perfil do cliente, canais de marketing e o timing ideal de envio.
+# 🛒 iFood Case – Recomendação de Ofertas com PySpark
 
----
-
-## 🎯 Objetivo
-
-- Analisar dados históricos de clientes, ofertas e transações
-- Construir um modelo que recomende a melhor oferta para cada cliente
-- Demonstrar impacto potencial no engajamento e conversão
+Este projeto tem como objetivo aplicar algoritmos de aprendizado de máquina para recomendar ofertas personalizadas a clientes, utilizando dados de transações, campanhas e perfis de clientes. A solução é construída com Python 3.11, PySpark e bibliotecas modernas de ciência de dados, com um ambiente totalmente automatizado via Docker.
 
 ---
 
-## 📁 Estrutura do Projeto
+## 🚀 Tecnologias utilizadas
 
-```
-ifood-case/
-├── data/
-│   ├── raw/               # Dados originais
-│   └── processed/         # Dados tratados
-├── notebooks/             # Jupyter notebooks
-├── presentation/          # Slides para stakeholders
-├── src/                   # Módulos Python (ETL, features, etc.)
-├── docker/                # Dockerfile
-├── docker-compose.yml     # Ambiente com JupyterLab
-├── pyproject.toml         # Configuração do projeto Python
-├── README.md              # Este arquivo
-└── .gitignore
-```
+- **Python 3.11**
+- **PySpark** (>= 3.5.0)
+- **Pandas**, **Scikit-learn**, **Matplotlib**, **Seaborn**
+- **XGBoost**, **LightGBM**, **CatBoost**
+- **JupyterLab**
+- **Docker + Docker Compose**
+- [`uv`](https://github.com/astral-sh/uv) — gerenciador de dependências moderno e rápido
+- `Makefile` para automação de tarefas
 
 ---
 
-## ⚙️ Instalação para Desenvolvimento Local com `uv`
+## 📦 Requisitos
 
-> O projeto usa o [uv](https://github.com/astral-sh/uv) como gerenciador de ambientes e dependências via `pyproject.toml`.
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [Make](https://www.gnu.org/software/make/) (instalado por padrão no Linux/macOS)
 
-### 🔹 Pré-requisitos
+---
 
-- Python 3.11+
-- [uv instalado](https://github.com/astral-sh/uv) (`curl -Ls https://astral.sh/uv/install.sh | sh`)
+## ⚙️ Comandos via Makefile
 
-### 🔹 Passos
+| Comando         | Descrição                                                                 |
+|-----------------|---------------------------------------------------------------------------|
+| `make build`    | Gera `.env` e sobe os containers com build                                |
+| `make start`    | Sobe os containers sem rebuild                                            |
+| `make stop`     | Para todos os containers                                                  |
+| `make rebuild`  | Faz rebuild limpo e sobe novamente                                        |
+| `make logs`     | Mostra os logs do container `ifood-jupyterlab`                            |
+| `make logs-all` | Mostra os logs de todos os serviços                                       |
+| `make bash`     | Acessa o terminal do container `ifood-jupyterlab`                         |
+| `make jupyter`  | Executa o JupyterLab manualmente dentro do container                      |
+| `make ps`       | Mostra o status dos containers em execução                                |
+| `make clean`    | ⚠️ Remove containers, volumes e imagens não usadas                        |
+| `make lint`     | Roda `ruff`, `black`, `isort` e `mypy` no diretório `src`                 |
+| `make test`     | Executa os testes com `pytest`                                            |
 
-1. Clone o repositório:
+---
+
+## 🔧 Setup e execução
+
+### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/nickssonfreitas/ifood-case.git
 cd ifood-case
 ```
 
-2. Crie e ative o ambiente virtual com `uv`:
-
-```bash
-uv venv
-source .venv/bin/activate
-```
-
-3. Instale as dependências definidas no `pyproject.toml`:
-
-```bash
-uv pip install .
-```
-
-4. Inicie o JupyterLab:
-
-```bash
-jupyter lab
-```
-
----
-
-## 🐳 Execução com Docker + Docker Compose
-
-> Ideal para rodar o ambiente completo com todas as dependências já configuradas.
-
-### 🔹 Passos
-
-1. Clone o repositório:
-
-```bash
-git clone https://github.com/nickssonfreitas/ifood-case.git
-cd ifood-case
-```
-
-2. Construa e suba os containers:
+### 2. Construa e inicie o ambiente
 
 ```bash
 make build
 ```
 
-3. Acesse o JupyterLab:
+Acesse o JupyterLab em: [http://localhost:8888](http://localhost:8888)
 
+---
+
+## 📁 Estrutura do projeto
+
+```text
+.
+├── src/                       # Código-fonte da solução
+├── notebooks/                # Notebooks exploratórios e de modelagem
+├── pyproject.toml            # Definição de dependências e configuração do projeto
+├── README.md                 # Este arquivo
+├── Makefile                  # Comandos automatizados
+├── docker-compose.yml        # Orquestração dos containers
+├── docker/
+│   └── Dockerfile            # Ambiente Docker com Python, Spark e uv
+│   └── start_notebook.sh     # Script de inicialização do JupyterLab
+└── .dockerignore             # Arquivos ignorados no build da imagem
 ```
-http://localhost:8888/lab
+
+---
+
+## 📚 Desenvolvimento local (sem Docker)
+
+> Opcional para quem quiser rodar localmente
+
+Requer: Python 3.11+ e [uv](https://github.com/astral-sh/uv)
+
+```bash
+uv pip compile pyproject.toml -o requirements.txt
+uv pip install -r requirements.txt
+jupyter lab
 ```
 
 ---
 
-## 📊 Requisitos dos Dados
+## 🧪 Rodando os testes
 
-Os seguintes arquivos `.json` devem estar salvos na pasta `data/raw/`:
-
-- `offers.json`
-- `customers.json`
-- `transactions.json`
+```bash
+make test
+```
 
 ---
 
-## 🧠 Tecnologias Utilizadas
+## 🧼 Lint e estilo de código
 
-- Python 3.11
-- [uv](https://github.com/astral-sh/uv)
-- PySpark
-- Pandas
-- Scikit-learn
-- JupyterLab
-- Docker / Docker Compose
-- pyproject.toml (PEP 621)
+Este projeto utiliza:
 
----
+- [`black`](https://github.com/psf/black) – formatação
+- [`isort`](https://pycqa.github.io/isort/) – organização de imports
+- [`ruff`](https://github.com/astral-sh/ruff) – linting
+- [`mypy`](http://mypy-lang.org/) – verificação de tipos
 
-## 👥 Público-Alvo da Apresentação
+Para rodar tudo de uma vez:
 
-A apresentação de resultados será feita em até **5 slides**, direcionada a **gestores de negócio não técnicos**, com foco em:
-
-- Resultados e projeções
-- Impacto da recomendação personalizada
-- Ganhos estimados em conversão e engajamento
+```bash
+make lint
+```
 
 ---
 
-## 📌 Autor
+## 👤 Autor
 
-Projeto desenvolvido por **Nicksson Ckayo Arrais de Freitas**  
-GitHub: [@nickssonfreitas](https://github.com/nickssonfreitas)  
+Nicksson Ckayo Arrais de Freitas  
+📧 nickssonarrais@email.com  
+🔗 [github.com/nickssonfreitas](https://github.com/nickssonfreitas)
+
+---
